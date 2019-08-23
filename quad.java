@@ -58,22 +58,35 @@ public class quad {
 		return entropy;
 	}
 
-	static void fill(BufferedImage img, int x, int y, int sz){
+	static double entropy1(BufferedImage img, int x, int y, int sz){
+		
+		double s = 0;
+		int avg = avg(img,x,y,sz);
+		for (int i = x; i < x + sz; i++) {
+			for (int j = y; j < y + sz; j++) {
+				int red = new Color(img.getRGB(i, j)).getRed();
+				s+= Math.abs(avg-red);
+			}
+		}
+		return (double)s/(sz*sz);
+	}
+
+	static void fill(BufferedImage img, int x, int y, int sz, BufferedImage out){
 		int avg = avg(img, x, y, sz);
 		for (int i = x; i < x + sz; i++) {
 			for (int j = y; j < y + sz; j++) {
 				int red = new Color(img.getRGB(i, j )).getRed();
-				img.setRGB(i, j, new Color(avg, avg, avg).getRGB());
+				out.setRGB(i, j, new Color(avg, avg, avg).getRGB());
 			}
 		}
 	}
 
-	static void drawRectangle(BufferedImage img, int x, int y, int sz){
+	static void drawRectangle(BufferedImage img, int x, int y, int sz, BufferedImage out){
 		for (int i = 0; i < sz; i++) {
-			img.setRGB(x, y+i, new Color(0, 0, 0).getRGB());
-			img.setRGB(x+i, y, new Color(0, 0, 0).getRGB());
-			img.setRGB(x+sz-1, y+i, new Color(0, 0, 0).getRGB());
-			img.setRGB(x+i, y+sz-1, new Color(0, 0, 0).getRGB());
+			out.setRGB(x, y+i, new Color(0, 0, 0).getRGB());
+			out.setRGB(x+i, y, new Color(0, 0, 0).getRGB());
+			out.setRGB(x+sz-1, y+i, new Color(0, 0, 0).getRGB());
+			out.setRGB(x+i, y+sz-1, new Color(0, 0, 0).getRGB());
 		}
 	}
 
@@ -90,33 +103,34 @@ public class quad {
 		return sum/count;
 	}
 
-	static void rec(BufferedImage img, int x, int y, int sz){
+	static void rec(BufferedImage img, int x, int y, int sz, BufferedImage out){
 		if(sz <= 2){
-			fill(img, x, y, sz);
-			drawRectangle(img,x,y,sz);
+			fill(img, x, y, sz, out);
+			drawRectangle(img,x,y,sz, out);
 			return;
 		}
 		
-		if(sz > 64 || entropy(img, x, y, sz) > 3.5){
-			rec(img, x + sz/2, y, sz/2);
-			rec(img, x + sz/2, y + sz/2, sz/2);
-			rec(img, x, y, sz/2);
-			rec(img, x, y + sz/2, sz/2);
+		if(sz > 64 || entropy1(img, x, y, sz) > 25){
+			rec(img, x + sz/2, y, sz/2, out);
+			rec(img, x + sz/2, y + sz/2, sz/2, out);
+			rec(img, x, y, sz/2, out);
+			rec(img, x, y + sz/2, sz/2, out);
 		}else{
-			fill(img, x, y, sz);
-			drawRectangle(img,x,y,sz);	
+			fill(img, x, y, sz, out);
+			drawRectangle(img,x,y,sz, out);	
 		}
 	}
 
 	public static void main(String[] args) throws IOException {
 
 		BufferedImage image = ImageIO.read(new File("cat.jpeg"));
+		BufferedImage out = ImageIO.read(new File("cat.jpeg"));
 		int w = image.getWidth();
 		System.out.println(w);
 		makeGray(image);
-		rec(image, 0, 0, w);
+		rec(image, 0, 0, w, out);
 
-		ImageIO.write(image, "jpeg", new File("output.jpeg"));
+		ImageIO.write(out, "jpeg", new File("output.jpeg"));
 	}
 
 }
