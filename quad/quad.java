@@ -104,13 +104,13 @@ public class quad {
 	}
 
 	static void rec(BufferedImage img, int x, int y, int sz, BufferedImage out){
-		if(sz <= 2){
+		if(sz <= 8){
 			fill(img, x, y, sz, out);
 			drawRectangle(img,x,y,sz, out);
 			return;
 		}
 		
-		if(sz > 64 || entropy1(img, x, y, sz) > 25){
+		if( entropy1(img, x, y, sz) > 20){
 			rec(img, x + sz/2, y, sz/2, out);
 			rec(img, x + sz/2, y + sz/2, sz/2, out);
 			rec(img, x, y, sz/2, out);
@@ -130,7 +130,7 @@ public class quad {
 		makeGray(image);
 		rec(image, 0, 0, w, out);
 
-		ImageIO.write(out, "jpeg", new File("output.jpeg"));
+		ImageIO.write(out, "png", new File("output.png"));
 	}
 
 }
