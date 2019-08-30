@@ -9,42 +9,9 @@ import javax.imageio.ImageIO;
 public class quad {
 
 	static int threshold = 45;
-
-	public static void makeGray(BufferedImage img) {
-		for (int x = 0; x < img.getWidth(); ++x)
-			for (int y = 0; y < img.getHeight(); ++y) {
-				int rgb = img.getRGB(x, y);
-				int r = (rgb >> 16) & 0xFF;
-				int g = (rgb >> 8) & 0xFF;
-				int b = (rgb & 0xFF);
-
-				// Normalize and gamma correct:
-				double rr = Math.pow(r / 255.0, 2.2);
-				double gg = Math.pow(g / 255.0, 2.2);
-				double bb = Math.pow(b / 255.0, 2.2);
-
-				// Calculate luminance:
-				double lum = 0.2126 * rr + 0.7152 * gg + 0.0722 * bb;
-
-				// Gamma compand and rescale to byte range:
-				int grayLevel = (int) (255.0 * Math.pow(lum, 1.0 / 2.2));
-				int gray = (grayLevel << 16) + (grayLevel << 8) + grayLevel;
-				img.setRGB(x, y, gray);
-			}
-	}
-
-	/*
-	 * static double entropy(BufferedImage img, int x, int y, int sz) { int[]
-	 * pdf = new int[256]; double s = 0; int avg = avg(img, x, y, sz); for (int
-	 * i = x; i < x + sz; i++) { for (int j = y; j < y + sz; j++) { int red =
-	 * new Color(img.getRGB(i, j)).getRed(); pdf[red]++; } } double entropy = 0;
-	 * int sum = 0; // int count = 0; for(int a : pdf){sum+=a;}
-	 * 
-	 * for (int i = 0; i < pdf.length; i++) { if (pdf[i] != 0) { double p =
-	 * (double) pdf[i] / sum; entropy -= p * Math.log(p); } }
-	 * System.out.println(entropy); return entropy; }
-	 */
-	static double entropy1(BufferedImage img, int x, int y, int sz) {
+	static boolean circle;
+	
+	static double entropy(BufferedImage img, int x, int y, int sz) {
 
 		double s = 0;
 		Color avg = avg(img, x, y, sz);
@@ -64,26 +31,22 @@ public class quad {
 
 	static void fill(BufferedImage img, int x, int y, int sz, BufferedImage out) {
 		Color avg = avg(img, x, y, sz);
-		for (int i = x; i < x + sz; i++) {
-			for (int j = y; j < y + sz; j++) {
-				out.setRGB(i, j, avg.getRGB());
-			}
+
+		Graphics g = out.getGraphics();
+		g.setColor(avg);
+		if(circle){
+			g.fillOval(x,y, sz, sz);
+		}else{
+			g.fillRect(x, y, sz, sz);
 		}
+		g.dispose();
 	}
 
 	static void drawRectangle(BufferedImage img, int x, int y, int sz, BufferedImage out) {
-		for (int i = 0; i < sz; i++) {
-			out.setRGB(x, y + i, new Color(0, 0, 0).getRGB());
-			out.setRGB(x + i, y, new Color(0, 0, 0).getRGB());
-			out.setRGB(x + sz - 1, y + i, new Color(0, 0, 0).getRGB());
-			out.setRGB(x + i, y + sz - 1, new Color(0, 0, 0).getRGB());
-		}
-		// Graphics g = out.getGraphics();
-		// g.setColor(Color.RED);
-		// g.fillOval(x, y, sz, sz);
-
-		// g.dispose(); // get rid of the Graphics context to save resources
-
+		Graphics g = out.getGraphics();
+		g.setColor(Color.BLACK);
+		g.drawRect(x, y, sz, sz);
+		g.dispose(); 
 	}
 
 	static Color avg(BufferedImage img, int x, int y, int sz) {
@@ -106,28 +69,38 @@ public class quad {
 	}
 
 	static void rec(BufferedImage img, int x, int y, int sz, BufferedImage out) {
-		if (sz <= 8) {
+		if (sz <= 4) {
 			fill(img, x, y, sz, out);
-			drawRectangle(img, x, y, sz, out);
+			if(!circle){
+				drawRectangle(img, x, y, sz, out);
+			}
 			return;
 		}
 
-		if (entropy1(img, x, y, sz) > threshold) {
+		if (entropy(img, x, y, sz) > threshold) {
 			rec(img, x + sz / 2, y, sz / 2, out);
 			rec(img, x + sz / 2, y + sz / 2, sz / 2, out);
 			rec(img, x, y, sz / 2, out);
 			rec(img, x, y + sz / 2, sz / 2, out);
 		} else {
 			fill(img, x, y, sz, out);
-			drawRectangle(img, x, y, sz, out);
+			if(!circle){
+				drawRectangle(img, x, y, sz, out);
+			}
 		}
 	}
 
 	public static void main(String[] args) throws IOException {
-
+		circle = false;
 		String pathToImage = args[0];
 		if (args.length >= 2) {
 			threshold = Integer.parseInt(args[1]);
+		}
+
+		if(args.length >= 3){
+			if(args[2].equals("c")){
+				circle = true;
+			}
 		}
 
 		BufferedImage image = ImageIO.read(new File(pathToImage));
