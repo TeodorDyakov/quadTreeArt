@@ -78,11 +78,11 @@ public class quad {
 			out.setRGB(x + sz - 1, y + i, new Color(0, 0, 0).getRGB());
 			out.setRGB(x + i, y + sz - 1, new Color(0, 0, 0).getRGB());
 		}
-//		Graphics g = out.getGraphics();
-//		g.setColor(Color.RED);
-//		g.fillOval(x, y, sz, sz);
+		// Graphics g = out.getGraphics();
+		// g.setColor(Color.RED);
+		// g.fillOval(x, y, sz, sz);
 
-//		g.dispose(); // get rid of the Graphics context to save resources
+		// g.dispose(); // get rid of the Graphics context to save resources
 
 	}
 
@@ -106,13 +106,13 @@ public class quad {
 	}
 
 	static void rec(BufferedImage img, int x, int y, int sz, BufferedImage out) {
-		if (sz <= 4) {
+		if (sz <= 8) {
 			fill(img, x, y, sz, out);
 			drawRectangle(img, x, y, sz, out);
 			return;
 		}
 
-		if (entropy1(img, x, y, sz) > 45) {
+		if (entropy1(img, x, y, sz) > threshold) {
 			rec(img, x + sz / 2, y, sz / 2, out);
 			rec(img, x + sz / 2, y + sz / 2, sz / 2, out);
 			rec(img, x, y, sz / 2, out);
@@ -139,7 +139,7 @@ public class quad {
 		g.dispose();
 
 		int w = image.getWidth();
-
+		System.out.println(w +" " + image.getHeight());
 		rec(image, 0, 0, w, out);
 
 		ImageIO.write(out, "png", new File("output.png"));
