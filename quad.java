@@ -9,7 +9,7 @@ import javax.imageio.ImageIO;
 public class quad {
 
 	static int threshold = 45;
-	static boolean circle;
+	static boolean circle = false;
 	
 	static double entropy(BufferedImage img, int x, int y, int szX, int szY) {
 
@@ -31,22 +31,17 @@ public class quad {
 
 	static void fill(BufferedImage img, int x, int y, int szX, int szY, BufferedImage out) {
 		Color avg = avg(img, x, y, szX, szY);
-
 		Graphics g = out.getGraphics();
 		g.setColor(avg);
+
 		if(circle){
 			g.fillOval(x,y, szX, szY);
 		}else{
 			g.fillRect(x, y, szX, szY);
+			g.setColor(Color.BLACK);
+			g.drawRect(x, y, szX, szY);
 		}
 		g.dispose();
-	}
-
-	static void drawRectangle(BufferedImage img, int x, int y, int szX, int szY, BufferedImage out) {
-		Graphics g = out.getGraphics();
-		g.setColor(Color.BLACK);
-		g.drawRect(x, y, szX, szY);
-		g.dispose(); 
 	}
 
 	static Color avg(BufferedImage img, int x, int y, int szX, int szY) {
@@ -71,9 +66,6 @@ public class quad {
 	static void rec(BufferedImage img, int x, int y, int szX, int szY, BufferedImage out) {
 		if (szX <= 4 || szY <= 4) {
 			fill(img, x, y, szX, szY, out);
-			if(!circle){
-				drawRectangle(img, x, y, szX, szY, out);
-			}
 			return;
 		}
 
@@ -84,14 +76,10 @@ public class quad {
 			rec(img, x, y + szY / 2, szX / 2, szY / 2, out);
 		} else {
 			fill(img, x, y, szX, szY, out);
-			if(!circle){
-				drawRectangle(img, x, y, szX, szY, out);
-			}
 		}
 	}
 
 	public static void main(String[] args) throws IOException {
-		circle = false;
 		String pathToImage = args[0];
 		if (args.length >= 2) {
 			threshold = Integer.parseInt(args[1]);
@@ -105,15 +93,17 @@ public class quad {
 
 		BufferedImage image = ImageIO.read(new File(pathToImage));
 		BufferedImage out = ImageIO.read(new File(pathToImage));
-		Graphics g = out.getGraphics();
 
+		Graphics g = out.getGraphics();
 		g.setColor(Color.BLACK);
 		g.fillRect(0, 0, out.getWidth(), out.getHeight());
 		g.dispose();
 
 		int w = image.getWidth();
 		int h = image.getHeight();
+		
 		System.out.println(w +" " + image.getHeight());
+		
 		rec(image, 0, 0, w, h, out);
 
 		ImageIO.write(out, "png", new File("output.png"));
