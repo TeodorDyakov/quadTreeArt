@@ -61,12 +61,13 @@ public class quad {
 		return new Color(sumRed / count, sumGreen / count, sumBlue / count);
 	}
 
-	static int[] histo = new int[1024];
 
+	static int[] histo = new int[1024];
 	static int count = 0;
+	
 	static void rec(BufferedImage img, int x, int y, int szX, int szY, BufferedImage out) {
 		if (szX <= 4 || szY <= 4) {
-						histo[szX]++;
+			histo[szX]++;
 			count++;
 			fill(img, x, y, szX, szY, out);
 			return;
@@ -78,7 +79,7 @@ public class quad {
 			rec(img, x, y, szX / 2, szY / 2, out);
 			rec(img, x, y + szY / 2, szX / 2, szY / 2, out);
 		} else {
-						histo[szX]++;
+			histo[szX]++;
 			count++;
 			fill(img, x, y, szX, szY, out);
 		}
@@ -116,11 +117,13 @@ public class quad {
 		
 		rec(image, 0, 0, w, h, out);
 		// System.out.println(count);
+
 		for(int i =0; i < histo.length; i++){
 			if(histo[i] != 0){
 				System.out.println(i + " : " + histo[i]);
 			}
 		}
+
 		ImageIO.write(out, "png", new File("output.png"));
 	}
 
