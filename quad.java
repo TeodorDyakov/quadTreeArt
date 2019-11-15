@@ -3,27 +3,25 @@ import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-
 import javax.imageio.ImageIO;
+import java.util.*;
 
 public class quad {
 
 	static int threshold = 45;
 	static boolean circle = false;
-	
-	static double entropy(BufferedImage img, int x, int y, int szX, int szY) {
+	static boolean outline = false;
 
+	static double entropy(BufferedImage img, int x, int y, int szX, int szY) {
 		double s = 0;
 		Color avg = avg(img, x, y, szX, szY);
+		
 		for (int i = x; i < x + szX; i++) {
 			for (int j = y; j < y + szY; j++) {
 				Color c = new Color(img.getRGB(i, j));
-				int red = c.getRed();
-				int green = c.getGreen();
-				int blue = c.getBlue();
-				s += Math.abs(avg.getRed() - red);
-				s += Math.abs(avg.getGreen() - green);
-				s += Math.abs(avg.getBlue() - blue);
+				s += Math.abs(avg.getRed() - c.getRed());
+				s += Math.abs(avg.getGreen() - c.getGreen());
+				s += Math.abs(avg.getBlue() - c.getBlue());
 			}
 		}
 		return (double) s / (szX * szY);
@@ -38,8 +36,10 @@ public class quad {
 			g.fillOval(x,y, szX, szY);
 		}else{
 			g.fillRect(x, y, szX, szY);
-			g.setColor(Color.BLACK);
-			g.drawRect(x, y, szX, szY);
+			if(outline){
+				g.setColor(Color.BLACK);
+				g.drawRect(x, y, szX, szY);
+			}
 		}
 		g.dispose();
 	}
@@ -51,20 +51,23 @@ public class quad {
 		int count = 0;
 		for (int i = x; i < x + szX; i++) {
 			for (int j = y; j < y + szY; j++) {
-				int red = new Color(img.getRGB(i, j)).getRed();
-				int green = new Color(img.getRGB(i, j)).getGreen();
-				int blue = new Color(img.getRGB(i, j)).getBlue();
-				sumRed += red;
-				sumGreen += green;
-				sumBlue += blue;
+				Color c = new Color(img.getRGB(i, j));
+				sumRed += c.getRed();
+				sumGreen += c.getGreen();
+				sumBlue += c.getBlue();
 				count++;
 			}
 		}
 		return new Color(sumRed / count, sumGreen / count, sumBlue / count);
 	}
 
+	static int[] histo = new int[1024];
+
+	static int count = 0;
 	static void rec(BufferedImage img, int x, int y, int szX, int szY, BufferedImage out) {
 		if (szX <= 4 || szY <= 4) {
+						histo[szX]++;
+			count++;
 			fill(img, x, y, szX, szY, out);
 			return;
 		}
@@ -75,20 +78,27 @@ public class quad {
 			rec(img, x, y, szX / 2, szY / 2, out);
 			rec(img, x, y + szY / 2, szX / 2, szY / 2, out);
 		} else {
+						histo[szX]++;
+			count++;
 			fill(img, x, y, szX, szY, out);
 		}
 	}
 
 	public static void main(String[] args) throws IOException {
 		String pathToImage = args[0];
+
 		if (args.length >= 2) {
 			threshold = Integer.parseInt(args[1]);
 		}
 
-		if(args.length >= 3){
-			if(args[2].equals("-c")){
-				circle = true;
-			}
+		Set<String> params = Set.of(args);
+
+		if(params.contains("-c")){
+			circle = true;
+		}
+
+		if(params.contains("-o")){
+			outline = true;
 		}
 
 		BufferedImage image = ImageIO.read(new File(pathToImage));
@@ -102,10 +112,15 @@ public class quad {
 		int w = image.getWidth();
 		int h = image.getHeight();
 		
-		System.out.println(w +" " + image.getHeight());
+		System.out.println(w + " " + image.getHeight());
 		
 		rec(image, 0, 0, w, h, out);
-
+		// System.out.println(count);
+		for(int i =0; i < histo.length; i++){
+			if(histo[i] != 0){
+				System.out.println(i + " : " + histo[i]);
+			}
+		}
 		ImageIO.write(out, "png", new File("output.png"));
 	}
 
