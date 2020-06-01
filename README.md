@@ -1,11 +1,10 @@
 # quadTreeArt
 Generate art with quadtree from image.
-Usage:
-javac quad.java
-
-1st argument - path to image
-2nd argument - integer threshold - more squares if it's small (default is 45), 
--o for black outline
+Usage:  
+javac quad.java  
+1st argument - path to image  
+2nd argument - integer threshold - more squares if it's small (default is 45)  
+-o for black outline  
 -c for circles instead of squares
 
 ```
