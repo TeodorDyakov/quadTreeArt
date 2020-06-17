@@ -15,7 +15,7 @@ public class quad {
 	static double entropy(BufferedImage img, int x, int y, int szX, int szY) {
 		double s = 0;
 		Color avg = avg(img, x, y, szX, szY);
-		
+
 		for (int i = x; i < x + szX; i++) {
 			for (int j = y; j < y + szY; j++) {
 				Color c = new Color(img.getRGB(i, j));
@@ -32,11 +32,11 @@ public class quad {
 		Graphics g = out.getGraphics();
 		g.setColor(avg);
 
-		if(circle){
-			g.fillOval(x,y, szX, szY);
-		}else{
+		if (circle) {
+			g.fillOval(x, y, szX, szY);
+		} else {
 			g.fillRect(x, y, szX, szY);
-			if(outline){
+			if (outline) {
 				g.setColor(Color.BLACK);
 				g.drawRect(x, y, szX, szY);
 			}
@@ -61,14 +61,8 @@ public class quad {
 		return new Color(sumRed / count, sumGreen / count, sumBlue / count);
 	}
 
-
-	static int[] histo = new int[1024];
-	static int count = 0;
-	
 	static void rec(BufferedImage img, int x, int y, int szX, int szY, BufferedImage out) {
 		if (szX <= 4 || szY <= 4) {
-			histo[szX]++;
-			count++;
 			fill(img, x, y, szX, szY, out);
 			return;
 		}
@@ -79,8 +73,6 @@ public class quad {
 			rec(img, x, y, szX / 2, szY / 2, out);
 			rec(img, x, y + szY / 2, szX / 2, szY / 2, out);
 		} else {
-			histo[szX]++;
-			count++;
 			fill(img, x, y, szX, szY, out);
 		}
 	}
@@ -92,13 +84,14 @@ public class quad {
 			threshold = Integer.parseInt(args[1]);
 		}
 
-		Set<String> params = Set.of(args);
+		@SuppressWarnings("unchecked")
+		Set<String> params = (Set<String>) Arrays.asList(args);
 
-		if(params.contains("-c")){
+		if (params.contains("-c")) {
 			circle = true;
 		}
 
-		if(params.contains("-o")){
+		if (params.contains("-o")) {
 			outline = true;
 		}
 
@@ -112,19 +105,9 @@ public class quad {
 
 		int w = image.getWidth();
 		int h = image.getHeight();
-		
-		System.out.println(w + " " + image.getHeight());
-		
+
 		rec(image, 0, 0, w, h, out);
-		// System.out.println(count);
-
-		for(int i =0; i < histo.length; i++){
-			if(histo[i] != 0){
-				System.out.println(i + " : " + histo[i]);
-			}
-		}
-
 		ImageIO.write(out, "png", new File("output.png"));
 	}
 
-}//test
+}
